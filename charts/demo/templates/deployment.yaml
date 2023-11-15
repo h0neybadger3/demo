@@ -16,12 +16,6 @@ spec:
       stableService: {{ include "demo.fullname" . }}
       canaryService: previewservice-{{ include "demo.fullname" . }}
       dynamicStableScale: true
-      trafficRouting:
-        nginx:
-          stableIngress: {{ $fullName }}
-          additionalIngressAnnotations:
-            canary-by-header: X-Canary
-            canary-by-header-value: iwantsit
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -91,12 +85,6 @@ spec:
       stableService: b-{{ include "demo.fullname" . }}
       canaryService: b-previewservice-{{ include "demo.fullname" . }}
       dynamicStableScale: true
-      trafficRouting:
-        nginx:
-          stableIngress: {{ $fullName }}
-          additionalIngressAnnotations:
-            canary-by-header: X-Canary
-            canary-by-header-value: iwantsit
   template:
     metadata:
       {{- with .Values.podAnnotations }}
