@@ -15,7 +15,7 @@ spec:
     canary:
       stableService: {{ include "demo.fullname" . }}
       canaryService: previewservice-{{ include "demo.fullname" . }}
-
+      dynamicStableScale: false
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -84,7 +84,7 @@ spec:
     canary:
       stableService: b-{{ include "demo.fullname" . }}
       canaryService: b-previewservice-{{ include "demo.fullname" . }}
-
+      dynamicStableScale: false
   template:
     metadata:
       {{- with .Values.podAnnotations }}
