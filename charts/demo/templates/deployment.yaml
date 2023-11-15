@@ -18,7 +18,7 @@ spec:
       dynamicStableScale: true
       trafficRouting:
         nginx:
-          stableIngress: {{ .Release.Name }}
+          stableIngress: {{ $fullName }}
           additionalIngressAnnotations:
             canary-by-header: X-Canary
             canary-by-header-value: iwantsit
@@ -93,7 +93,7 @@ spec:
       dynamicStableScale: true
       trafficRouting:
         nginx:
-          stableIngress: {{ .Release.Name }}
+          stableIngress: {{ $fullName }}
           additionalIngressAnnotations:
             canary-by-header: X-Canary
             canary-by-header-value: iwantsit
