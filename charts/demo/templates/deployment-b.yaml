@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: {{ include "demo.fullname" . }}
+  name: b-{{ include "demo.fullname" . }}
   labels:
     {{- include "demo.labels" . | nindent 4 }}
 spec:
@@ -13,8 +13,8 @@ spec:
       {{- include "demo.selectorLabels" . | nindent 6 }}
   strategy:
     canary:
-      stableService: {{ include "demo.fullname" . }}
-      canaryService: previewservice-{{ include "demo.fullname" . }}
+      stableService: b-{{ include "demo.fullname" . }}
+      canaryService: b-previewservice-{{ include "demo.fullname" . }}
       dynamicStableScale: false
   template:
     metadata:
