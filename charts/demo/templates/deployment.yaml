@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: {{ include "demo.fullname" . }}
   labels:
@@ -11,6 +11,92 @@ spec:
   selector:
     matchLabels:
       {{- include "demo.selectorLabels" . | nindent 6 }}
+  strategy:
+    canary:
+      stableService: {{ include "demo.fullname" . }}
+      canaryService: previewservice-{{ include "demo.fullname" . }}
+      dynamicStableScale: true
+      trafficRouting:
+        nginx:
+          stableIngress: {{ .Release.Name }}
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+            canary-by-header-value: iwantsit
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "demo.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "demo.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: b-{{ include "demo.fullname" . }}
+  labels:
+    {{- include "demo.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "demo.selectorLabels" . | nindent 6 }}
+  strategy:
+    canary:
+      stableService: b-{{ include "demo.fullname" . }}
+      canaryService: b-previewservice-{{ include "demo.fullname" . }}
+      dynamicStableScale: true
+      trafficRouting:
+        nginx:
+          stableIngress: {{ .Release.Name }}
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+            canary-by-header-value: iwantsit
   template:
     metadata:
       {{- with .Values.podAnnotations }}
